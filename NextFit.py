@@ -1,10 +1,10 @@
 def next_fit_memory_allocation():
     # Variables to store memory block sizes and process sizes
     MAX = 25
-    b = [0] * MAX  # Block sizes
-    f = [0] * MAX  # Process sizes
-    original_b = [0] * MAX  # To store the original block sizes for accurate fragmentation
-    allocated_flags = [0] * MAX  # Flags to indicate whether a block is allocated
+    b = [0] * MAX  
+    f = [0] * MAX  
+    original_b = [0] * MAX  
+    flagn = [0] * MAX 
 
     # Read number of memory blocks and processes
     nb = int(input("Enter the number of blocks: "))
@@ -21,33 +21,32 @@ def next_fit_memory_allocation():
     for i in range(nf):
         f[i] = int(input(f"Process {i+1}: "))
 
-    # Initialize variables for fragmentation
+    
     last_allocated_index = -1  # Track the last allocated block
-    fragx = 0  # External fragmentation
 
     print("\n\nProcess_No\tProcess_Size\tBlock_No\tBlock_Size_Before\tFragment")
 
     # Allocate memory to processes using Next Fit algorithm
     for i in range(nf):
-        allocated = False  # Flag to indicate if the process was allocated
-        start_index = (last_allocated_index + 1) % nb  # Start from the last allocated block
+        allocated = False  
+        start_index = (last_allocated_index + 1) % nb 
 
-        # First phase: Search from the last allocated index to the end
+        #search from the last allocated index to the end
         for j in range(start_index, nb):
-            if f[i] <= b[j]:  # If the process fits in the block
-                allocated_flags[j] = 1  # Mark the block as allocated
-                print(f"{i+1:<15}{f[i]:<15}{j+1:<15}{b[j]:<20}", end="") 
-                b[j] -= f[i]  # Reduce the block size after allocation
+            if f[i] <= b[j]: 
+                flagn[j] = 1  
+                print(f"{i+1:<15}{f[i]:<15}{j+1:<15}{b[j]:<20}", end="")  
+                b[j] -= f[i]  
                 print(f"{b[j]:<15}")
-                last_allocated_index = j  # Update the last allocated block
+                last_allocated_index = j 
                 allocated = True
                 break
 
-        # Second phase: Wrap around and search from the start to the last allocated index
+        #Wrap around and search from the start to the last allocated index
         if not allocated:
             for j in range(0, start_index):
                 if f[i] <= b[j]:
-                    allocated_flags[j] = 1
+                    flagn[j] = 1
                     print(f"{i+1:<15}{f[i]:<15}{j+1:<15}{b[j]:<20}", end="")
                     b[j] -= f[i]
                     print(f"{b[j]:<15}")
@@ -59,22 +58,31 @@ def next_fit_memory_allocation():
         if not allocated:
             print(f"{i+1:<15}{f[i]:<15}{'WAIT...':<15}{'WAIT...':<20}{'WAIT...':<15}")
 
-    # Calculate internal fragmentation
-    fragi = sum(original_b[j] - b[j] for j in range(nb) if allocated_flags[j] == 1)
+    # Calculate and display internal fragmentation 
+    fragi = 0  
+    print("\nInternal Fragmentation Breakdown:")
+    for j in range(nb):
+        if flagn[j] == 1: 
+            fragment = original_b[j] - (original_b[j] - b[j])
+            fragi += fragment
+            print(f"Block {j+1}: Original Size = {original_b[j]}, " +
+                  f"Allocated Size = {original_b[j] - b[j]}, " +
+                  f"Fragment = {fragment}")
 
     # Calculate external fragmentation
+    fragx = 0  
     for j in range(nb):
-        if allocated_flags[j] == 0:  # If the block is not allocated
-            fragx += b[j]
+        if flagn[j] == 0:  
+            fragx += b[j]  
 
     # Display final fragmentation results
-    print(f"\nInternal Fragmentation = {fragi}")
-    print(f"External Fragmentation = {fragx}")
+    print(f"\nInternal Fragmentation = {fragi}KB")
+    print(f"External Fragmentation = {fragx}KB")
 
     # Display final memory status
     print("\nFinal Memory Status:")
     for j in range(nb):
-        status = "Allocated" if allocated_flags[j] == 1 else "Free"
+        status = "Allocated" if flagn[j] == 1 else "Free"
         print(f"Block {j+1}: Remaining Size = {b[j]}KB, Status = {status}")
 
 # Run the function to simulate Next Fit memory allocation
